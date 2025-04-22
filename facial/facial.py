@@ -111,48 +111,6 @@ def visualize_face_landmarks(image_path, save_path=None, display=True):
         cv2.destroyAllWindows()
     return annotated
 
-def gradio_process(image):
-    # 保存上传的图像
-    temp_path = "temp_uploaded.jpg"
-    cv2.imwrite(temp_path, cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
-
-    try:
-        # 获取面部特征
-        feats = analyze_face(temp_path)
-
-        # 可视化关键点
-        annotated = visualize_face_landmarks(temp_path, display=False)
-
-        result_text = (
-            f"嘴角歪斜角度差: {feats['mouth_tilt']}°\n"
-            f"左眼 EAR: {feats['left_ear']}\n"
-            f"右眼 EAR: {feats['right_ear']}\n"
-        )
-
-        # 简单规则判断
-        if abs(feats['mouth_tilt']) > 200:
-            result_text += "⚠️ 可能存在嘴角歪斜。\n"
-        if abs(feats['left_ear'] - feats['right_ear']) > 0.1:
-            result_text += "⚠️ 可能存在眼部不对称。\n"
-
-        return result_text, cv2.cvtColor(annotated, cv2.COLOR_BGR2RGB)
-    except Exception as e:
-        return f"发生错误：{str(e)}", None
-    
-
-# 创建 Gradio 界面
-iface = gr.Interface(
-    fn=gradio_process,
-    inputs=gr.Image(type="numpy", label="上传面部图片"),
-    outputs=[
-        gr.Textbox(label="面部分析结果"),
-        gr.Image(type="numpy", label="面部关键点可视化"),
-    ],
-    title="中风辅助检测 - 面部关键点分析",
-    description="上传一张面部正面图片，检测嘴角歪斜角度和眼睛开合比例。",
-    theme="default",
-)
-
 if __name__ == "__main__":
     path = "facial_data/"
     pic = "2.jpg" 
