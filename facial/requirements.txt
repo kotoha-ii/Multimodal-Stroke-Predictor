@@ -1,0 +1,8 @@
+mediapipe==0.10.11
+opencv-python==4.9.0.80
+numpy>=1.23
+gradio==4.14.0
+matplotlib>=3.5
+scikit-learn>=1.1
+pandas>=1.4
+fastapi==0.112.2 
