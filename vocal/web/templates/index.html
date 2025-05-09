@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>脑卒中语音筛查系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 800px;
+        }
+        .result-card {
+            margin-top: 20px;
+            display: none;
+        }
+        #audioVisualizer {
+            width: 100%;
+            height: 100px;
+            background-color: #e9ecef;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mb-4">脑卒中语音筛查系统</h1>
+        
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">录音检测</h5>
+                
+                <div id="audioVisualizer"></div>
+                
+                <div class="d-flex gap-2 mb-3">
+                    <button id="startRecord" class="btn btn-primary">开始录音</button>
+                    <button id="stopRecord" class="btn btn-danger" disabled>停止录音</button>
+                    <button id="uploadRecord" class="btn btn-success" disabled>上传分析</button>
+                </div>
+                
+                <p class="text-muted">或上传已有录音文件：</p>
+                <form id="uploadForm">
+                    <div class="input-group mb-3">
+                        <input type="file" class="form-control" id="audioFile" accept="audio/*">
+                        <button class="btn btn-outline-secondary" type="submit">分析</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div id="resultCard" class="card result-card">
+            <div class="card-body">
+                <h5 class="card-title">分析结果</h5>
+                <div id="results"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/static/js/main.js"></script>
+</body>
+</html>
