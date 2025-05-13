@@ -4,11 +4,7 @@ from pyAudioAnalysis.audioBasicIO import read_audio_file
 from pyAudioAnalysis import ShortTermFeatures
 import speech_recognition as sr
 from pypinyin import pinyin, Style
-import jieba
-import speech_recognition as sr
-from pypinyin import pinyin, Style
-import jieba
-# 简化特征提取，主要使用LibROSA
+
 
 def analyze_audio(filepath):
     """分析音频文件并返回脑卒中相关特征"""
