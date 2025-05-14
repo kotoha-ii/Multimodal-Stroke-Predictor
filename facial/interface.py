@@ -86,15 +86,22 @@ def process_image(img_path):
         features, results = analyze_face(img_path)
         img = visualize_landmarks(img_path, results)
 
-        msg = f"""嘴角歪斜角度差：{features['mouth_tilt']} 度  
-左眼 EAR：{features['left_ear']}  
-右眼 EAR：{features['right_ear']}  
-"""
+        msg = f"""
+                嘴角歪斜角度差 > 200 为可能存在嘴角歪斜
+                EAR相差 > 0.1 为可能存在眼部不对称
+                嘴角歪斜角度差：{features['mouth_tilt']} 度  
+                左眼 EAR：{features['left_ear']}  
+                右眼 EAR：{features['right_ear']}  
+                """
 
         if abs(features['mouth_tilt']) > 200:
             msg += "⚠️ 可能存在嘴角歪斜\n"
+        else:
+            msg += "嘴角未见歪斜\n"
         if abs(features['left_ear'] - features['right_ear']) > 0.1:
             msg += "⚠️ 可能存在眼部不对称\n"
+        else:
+            msg += "眼部未见不对称"
 
         return img, msg
     except Exception as e:

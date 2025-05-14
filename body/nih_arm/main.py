@@ -8,6 +8,14 @@ from nih_utils import ArmEvaluator
 import mediapipe as mp
 from PIL import ImageFont, ImageDraw, Image  # 新增导入
 
+def run_pose_assessment():
+    import subprocess
+    subprocess.run(["python", "pose/main_pose.py", "-i", "0"])  # 用摄像头
+
+def run_pose_assessment():
+    import subprocess
+    subprocess.run(["python", "pose/main_pose.py", "-i", "0"])  # 用摄像头
+
 def draw_chinese_text(image, text, position, color, font):
     image_pil = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
     draw = ImageDraw.Draw(image_pil)
@@ -18,7 +26,7 @@ def main():
     parser = argparse.ArgumentParser(description='NIH上肢评估系统')
     parser.add_argument('-i', '--input', required=True, help='输入视频路径或摄像头ID')
     args = parser.parse_args()
-
+    
     # 初始化中文字体
     try:
         font = ImageFont.truetype("simhei.ttf", 20)  # 或指定完整路径如"C:/Windows/Fonts/simhei.ttf"

@@ -360,14 +360,3 @@ def generate_report(features, duration):
         })
     
     return report
-
-# 示例医学特征计算（需添加到audio_processor.py）
-# def calculate_clinical_features(y, sr):
-#     return {
-#         'vowel_articulation': analyze_vowel_articulation(y, sr),
-#         'consonant_precision': analyze_consonant_precision(y, sr),
-#         'speech_rate': calculate_syllable_rate(y, sr)
-#     }
-
-# 我在当前文件夹下实现了一个脑卒中早筛的语音识别系统，用于识别一段语音中与脑卒中相关的可量化特征，
-# 如语速、停顿频率、元音辅音准确率等等。请为我分析这个系统的代码，并将项目结构写成一个readme.md存放在主文件夹下

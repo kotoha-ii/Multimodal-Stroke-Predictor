@@ -1,12 +1,14 @@
-import argparse
-import os
+# body/main.py
 import cv2
+import os
 import time
 import numpy as np
-from config import Config
-from nih_utils import ArmEvaluator
-import mediapipe as mp
-from PIL import ImageFont, ImageDraw, Image  # 新增导入
+from body.config import Config
+from body.nih_utils import ArmEvaluator
+from PIL import ImageFont, ImageDraw, Image
+
+# 添加控制变量
+is_running = False
 
 def draw_chinese_text(image, text, position, color, font):
     image_pil = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
@@ -14,65 +16,66 @@ def draw_chinese_text(image, text, position, color, font):
     draw.text(position, text, font=font, fill=color)
     return cv2.cvtColor(np.array(image_pil), cv2.COLOR_RGB2BGR)
 
-def main():
-    parser = argparse.ArgumentParser(description='NIH上肢评估系统')
-    parser.add_argument('-i', '--input', required=True, help='输入视频路径或摄像头ID')
-    args = parser.parse_args()
+def start_pose_assessment(video_input=0):
+    """启动摄像头评估，支持 Gradio 按钮触发"""
+    global is_running
+    is_running = True
 
-    # 初始化中文字体
     try:
-        font = ImageFont.truetype("simhei.ttf", 20)  # 或指定完整路径如"C:/Windows/Fonts/simhei.ttf"
+        font = ImageFont.truetype("simhei.ttf", 20)
     except IOError:
-        print("警告：未找到中文字体，将使用默认字体")
+        print("未找到 simhei.ttf，使用默认字体")
         font = ImageFont.load_default()
 
     config = Config()
     evaluator = ArmEvaluator(config)
     last_terminal_update = 0
+
+    import mediapipe as mp
     pose = mp.solutions.pose.Pose(
         model_complexity=config.MODEL_COMPLEXITY,
         min_detection_confidence=config.MIN_DETECTION_CONFIDENCE
     )
-
-    cap = cv2.VideoCapture(int(args.input) if args.input.isdigit() else args.input)
+    
+    if isinstance(video_input, dict) and "name" in video_input:
+        video_input = video_input["name"]
+    elif video_input==None:
+        video_input = 0  # 默认为摄像头
+        
+    cap = cv2.VideoCapture(int(video_input) if str(video_input).isdigit() else video_input)
     if not cap.isOpened():
-        print(f"无法打开视频源: {args.input}")
-        return
+        print(f"无法打开视频源: {video_input}")
+        return "无法打开视频源"
 
-    while cap.isOpened():
+    while cap.isOpened() and is_running:
         success, frame = cap.read()
-        if not success: break
+        if not success:
+            break
         current_time = time.time()
         results = pose.process(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-        
+
         if results.pose_landmarks:
             landmarks = np.array([[lm.x, lm.y] for lm in results.pose_landmarks.landmark])
-            # 新增校准调用
             evaluator.dynamic_calibration(landmarks)
             corrected_landmarks = evaluator.get_corrected_landmarks(landmarks)
             if evaluator.check_posture(corrected_landmarks):
                 angles = evaluator.get_arm_angles(landmarks)
-                evaluator.update_scores(angles, corrected_landmarks, time.time())
-                
-                # 渲染指导文本
+                evaluator.update_scores(angles, corrected_landmarks, current_time)
                 frame = draw_chinese_text(frame, config.GUIDELINE_TEXT, (30, 30),
-                                         tuple(config.COLOR_CORRECT), font)
-                
-                # 渲染角度和分数
+                                          tuple(config.COLOR_CORRECT), font)
                 for i, (side, angle) in enumerate(angles.items()):
                     text = f"{side}臂: {angle:.1f}° ({evaluator.scores[side]}分)"
-                    color = config.COLOR_CORRECT if evaluator.scores[side]<2 else config.COLOR_WARNING
+                    color = config.COLOR_CORRECT if evaluator.scores[side] < 2 else config.COLOR_WARNING
                     frame = draw_chinese_text(frame, text, (30, 70+i*40), tuple(color), font)
             else:
                 frame = draw_chinese_text(frame, "请保持直立姿势!", (30, 30),
-                                         tuple(config.COLOR_WARNING), font)
-            #####每0.5s打印信息#####每0.5s打印信息#####每0.5s打印信息
+                                          tuple(config.COLOR_WARNING), font)
             if current_time - last_terminal_update > 0.5:
                 os.system('cls' if os.name == 'nt' else 'clear')
                 print(f"校准状态: {evaluator.get_calibration_status()}")
-                print(f"左臂角度: {angles.get('left', 0):.1f}° 右臂角度: {angles.get('right', 0):.1f}°")
+                print(f"左臂: {angles.get('left', 0):.1f}° | 右臂: {angles.get('right', 0):.1f}°")
                 last_terminal_update = current_time
-            #####每0.5s打印信息#####每0.5s打印信息#####每0.5s打印信息
+
         cv2.imshow('NIH Upper Limb Assessment', frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
@@ -82,5 +85,16 @@ def main():
     print("\n最终评估结果:")
     print(f"左臂: {evaluator.scores['left']}分 | 右臂: {evaluator.scores['right']}分")
 
-if __name__ == "__main__":
-    main()
+    return f"""评估结束: 左臂 {evaluator.scores['left']}分 | 右臂 {evaluator.scores['right']}分
+        Scale Definition
+        0 No drift; limb holds 90 (or 45) degrees for full 10 seconds.
+        1 Drift; limb holds 90 (or 45) degrees, but drifts down before full 10 seconds; does not hit bed or other support.
+        2 Some effort against gravity; limb cannot get to or maintain (if cued) 90 (or 45) degrees, drifts down to bed, but has some effort against gravity.
+        3 No effort against gravity; limb falls.
+        """
+
+def stop_pose_assessment():
+    """终止摄像头评估"""
+    global is_running
+    is_running = False
+    return "上肢评估已终止"
