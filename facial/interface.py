@@ -97,7 +97,7 @@ def process_image(img_path):
         if abs(features['mouth_tilt']) > 200:
             msg += "⚠️ 可能存在嘴角歪斜\n"
         else:
-            msg += "嘴角未见歪斜\n"
+            msg += "嘴角未见歪斜  "
         if abs(features['left_ear'] - features['right_ear']) > 0.1:
             msg += "⚠️ 可能存在眼部不对称\n"
         else:
