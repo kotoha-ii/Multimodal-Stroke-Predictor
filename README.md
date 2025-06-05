@@ -4,6 +4,13 @@ Multimodal-Stroke-Predictor is a multimodal stroke prediction framework that lev
 
 ## web ui
 
+创建环境
+
+```
+conda create -n yourname python=3.9.22
+pip install requirements.txt
+```
+
 创建.env文件 填入你的大模型链接以及你的api key
 
 ```
