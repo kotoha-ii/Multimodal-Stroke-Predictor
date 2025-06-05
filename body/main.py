@@ -40,7 +40,7 @@ def start_pose_assessment(video_input=0):
     if isinstance(video_input, dict) and "name" in video_input:
         video_input = video_input["name"]
     elif video_input==None:
-        video_input = 0  # 默认为摄像头
+        return "无法打开视频源"
         
     cap = cv2.VideoCapture(int(video_input) if str(video_input).isdigit() else video_input)
     if not cap.isOpened():
